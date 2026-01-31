@@ -1,0 +1,54 @@
+services:
+  # Pathway RAG Backend
+  rag-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gemini-rag-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount data directory for local documents
+      - ./data:/app/data
+      # Mount credentials for Google Drive access
+      - ./credentials:/app/credentials
+      # Mount cache for persistence
+      - ./.cache:/app/.cache
+      # Mount app.yaml for easy configuration changes
+      - ./app.yaml:/app/app.yaml:ro
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "-X", "POST", "http://localhost:8000/v1/statistics"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # Streamlit UI
+  rag-ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: gemini-rag-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://rag-backend:8000
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_PORT=8501
+    depends_on:
+      rag-backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge

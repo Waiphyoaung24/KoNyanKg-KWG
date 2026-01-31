@@ -1,0 +1,58 @@
+# Combined Dockerfile for Dokploy Deployment
+# Includes both RAG Backend (Pathway + Gemini) and Streamlit UI
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV STREAMLIT_SERVER_HEADLESS=true
+ENV STREAMLIT_SERVER_PORT=8501
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies for PDF processing and supervisord
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    libmagic1 \
+    poppler-utils \
+    tesseract-ocr \
+    libtesseract-dev \
+    libgl1 \
+    libglib2.0-0 \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements files
+COPY requirements.txt ./requirements-backend.txt
+COPY ui/requirements.txt ./requirements-ui.txt
+
+# Install all Python dependencies
+RUN pip install --no-cache-dir -r requirements-backend.txt -r requirements-ui.txt
+
+# Copy backend application
+COPY app.py .
+COPY app.yaml .
+
+# Copy UI application
+COPY ui/app.py ./ui_app.py
+
+# Copy data directory with PDFs (baked into image)
+COPY data/ ./data/
+
+# Create necessary directories
+RUN mkdir -p credentials .cache /var/log/supervisor
+
+# Copy supervisord configuration
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Expose ports (Backend: 8000, UI: 8501)
+EXPOSE 8000 8501
+
+# Health check on the backend API
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
+    CMD curl -sf -X POST http://localhost:8000/v1/statistics || exit 1
+
+# Run supervisord to manage both services
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

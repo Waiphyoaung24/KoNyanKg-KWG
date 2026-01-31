@@ -1,0 +1,46 @@
+# Environment variables (contains secrets)
+.env
+
+# Cache directories
+.cache/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Credentials (sensitive)
+credentials/
+*.json
+!package.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Python
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# Logs
+*.log
+logs/
+
+# Docker
+.docker/
+
+# Pathway cache
+Cache/
+.Cache/
+
+# Test data (optional - remove if you want to track test documents)
+# data/
+
+# Jupyter
+.ipynb_checkpoints/
