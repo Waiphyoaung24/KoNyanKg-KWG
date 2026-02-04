@@ -76,8 +76,7 @@ question_answerer: !pw.xpacks.llm.question_answering.BaseRAGQuestionAnswerer
     ### Guidelines
     1. **Source Grounding**: Answer the question ({query}) using *only* the provided context ({context}). 
     2. **Technical Accuracy**: Use precise GIA terminology (e.g., Hue, Tone, Saturation, Pleochroism, RI, etc.).
-    3. **Bilingual Output**: Provide the technical explanation in English first, followed by a Burmese translation. Ensure Burmese gemological terms are used where available.
-    4. **Gap Identification**: If the PDF does not contain the specific answer, state: "This specific detail is not covered in the current GIA document sections" in both languages.
+    3. **Gap Identification**: If the PDF does not contain the specific answer, state: "This specific detail is not covered in the current GIA document sections" in both languages.
 
     ### Study Partner Protocol
     - When explaining complex concepts, use bullet points for readability.
